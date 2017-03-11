@@ -25,6 +25,10 @@ else
 fi
 exec 2>&1
 
+echo ">>> stop and disable coreos update manager"
+echo "REBOOT_STRATEGY=off" >> /etc/coreos/update.conf
+systemctl stop locksmithd.service
+systemctl disable locksmithd.service
 
 echo ">>> if centos basic os prep"
 if [ $(which yum) ]; then
@@ -87,7 +91,7 @@ cluster_name: dcos
 exhibitor_storage_backend: static
 process_timeout: 600
 master_discovery: static
-oauth_enabled: 'false'
+oauth_enabled: $FIREWALL
 resolvers:
 - 10.0.80.11
 - 10.0.80.12
@@ -105,8 +109,8 @@ chmod 0600 genconf/ssh_key
 
 
 echo ">>> download dcos installer"
-#curl -O -s https://downloads.dcos.io/dcos/EarlyAccess/dcos_generate_config.sh
-curl -O https://downloads.dcos.io/dcos/stable/dcos_generate_config.sh
+curl -O https://downloads.dcos.io/dcos/EarlyAccess/dcos_generate_config.sh
+#curl -O https://downloads.dcos.io/dcos/stable/dcos_generate_config.sh
 chmod +x dcos_generate_config.sh
 
 echo ">>> run --genconf"
@@ -130,7 +134,6 @@ DCOS_INSTALLER_DAEMONIZE=false ./dcos_generate_config.sh --deploy
 echo ">>> run --postflight"
 DCOS_INSTALLER_DAEMONIZE=false ./dcos_generate_config.sh --postflight
 
-
 echo ">>> if centos then deactivate overlayfs on agenst for now"
 if [ $(which yum) ]; then
    IFS=' ' read -ra a <<<"$AGENT_PRIV_IPS $PUBLIC_AGENT_PRIV_IPS"
@@ -151,10 +154,10 @@ RUN apt-get install -y jq
 RUN pip install virtualenv
 RUN mkdir dcos
 WORKDIR dcos
-RUN curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.8/dcos
+RUN curl -O https://downloads.dcos.io/binaries/cli/linux/x86-64/dcos-1.9/dcos
 RUN chmod +x dcos
 RUN mv dcos /usr/local/bin
-RUN dcos config set core.dcos_url http://$MASTER_PUBLIC_IP
+RUN dcos config set core.dcos_url http://$MASTER_PRIVATE_IP
 EOF
 docker build -t dcoscli dcoscli
 docker run -di --name=dcoscli dcoscli /bin/bash

@@ -26,6 +26,11 @@ fi
 exec 2>&1
 
 
+echo ">>> stop and disable coreos update manager"
+echo "REBOOT_STRATEGY=off" >> /etc/coreos/update.conf
+systemctl stop locksmithd.service
+systemctl disable locksmithd.service
+
 echo ">>> if centos basic os prep"
 if [ $(which yum) ]; then
    yum upgrade -y
@@ -75,33 +80,10 @@ echo ">>> setting up firewall"
 cat > /var/lib/iptables/rules-save <<EOF
 *filter
 :INPUT DROP [0:0]
--A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 2181 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 2888 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 3888 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 5050 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 5051 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 8123 -j ACCEPT
--A INPUT -p tcp -m tcp --dport 8181 -j ACCEPT
 -A INPUT -i lo -j ACCEPT
 -A INPUT -i eth0 -j ACCEPT
--A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type 0 -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type 3 -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type 8 -j ACCEPT
--A INPUT -p icmp -m icmp --icmp-type 11 -j ACCEPT
-:DOCKER-ISOLATION - [0:0]
-:DOCKER - [0:0]
-:FORWARD ACCEPT [0:0]
--A FORWARD -p all -j DOCKER-ISOLATION
--A FORWARD -i eth1 -j REJECT
--A FORWARD -p all -o docker0 -j DOCKER
--A FORWARD -p all -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A FORWARD -p all -i docker0 "!" -o docker0 -j ACCEPT
--A FORWARD -p all -i docker0 -o docker0 -j ACCEPT
+-A INPUT -p tcp --dport 22 -j ACCEPT
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 COMMIT
 EOF
 

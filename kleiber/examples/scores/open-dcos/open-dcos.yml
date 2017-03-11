@@ -60,7 +60,10 @@ resources:
         keyname: "{{ parameters.keyname }}"
         hostname: "{{ clustername }}-agent"
         script: agent.sh
-        userdata: 'FIREWALL={{ parameters.firewall | lower }}'
+        userdata: '
+          AGENT_TYPE="private"
+          FIREWALL="{{ parameters.firewall | lower }}"
+        '
         nic_speed: "{{ parameters.nic_speed }}"
 
       public_agents:
@@ -72,7 +75,10 @@ resources:
         keyname: "{{ parameters.keyname }}"
         hostname: "{{ clustername }}-p-agent"
         script: agent.sh
-        userdata: 'FIREWALL={{ parameters.firewall | lower }}'
+        userdata: '
+          AGENT_TYPE="public"
+          FIREWALL="{{ parameters.firewall | lower }}"
+        '
         nic_speed: "{{ parameters.nic_speed }}"
 
       bootstrap:
@@ -86,6 +92,7 @@ resources:
         script: open-dcos.sh
         userdata: '
           MASTER_PUBLIC_IP="{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}"
+          MASTER_PRIVATE_IP="{{ resources["serverinstances"]["masters"]["vms"][0]["primaryBackendIpAddress"] }}"
           MASTER_PRIVATE_IPS="{% for vms in resources["serverinstances"]["masters"]["vms"] %}
             {{ vms["primaryBackendIpAddress"] }}
             {%endfor%}"
@@ -96,6 +103,7 @@ resources:
             {{ vms["primaryBackendIpAddress"] }}
             {%endfor%}"
           SSH_KEY="{{ parameters.pkey|replace("\n","|") }}"
+          FIREWALL="{{ parameters.firewall | lower }}"
         '
         nic_speed: "{{ parameters.nic_speed }}"
 
