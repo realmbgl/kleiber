@@ -367,3 +367,7 @@ def error(message):
     sys.stderr.write("\n")
 
     sys.exit(1)
+
+
+def read_file(name):
+    return open(name, 'r').read()

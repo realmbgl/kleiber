@@ -38,14 +38,14 @@ simple cluster (1 master, 1 agent) takes like 15 mins, a more complex one (3 mas
 We run with **-v** option so that you see debug output, and know something is happening.
 
 ```
-kleiber create open-dcos.yml cluster_name datacenter=sjc01 masters=1 agents=1 keyname=public_key_name pkey="$(< private_key_path)" -v
+kleiber create open-dcos.yml cluster_name datacenter=sjc01 masters=1 agents=1 keyname=public_key_name pkey=private_key_path -v
 ```
 * cluster_name - the name you want to give the cluster, will be the prefix on all the node names
 * datacenter - the softlayer datacenter you want the dc/os cluster created in
 * masters - the number of mesos master nodes you want in your dc/os cluster, for HA you would want 3
 * agents - the number of mesos agent nodes you want in your dc/os cluster
 * keyname - the name of the public key registered with softlayer with which the nodes get configured
-* pkey - the private key (see former snippet for easy way to pass it), required by the bootstrap node to install the dc/os roles on masters and agents
+* pkey - the path of the private key file, required by the bootstrap node to install the dc/os roles on masters and agents
 
 
 The creation ends with the following ouput.

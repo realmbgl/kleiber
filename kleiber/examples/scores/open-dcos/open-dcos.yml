@@ -102,7 +102,7 @@ resources:
           PUBLIC_AGENT_PRIVATE_IPS="{% for vms in resources["serverinstances"]["public_agents"]["vms"] %}
             {{ vms["primaryBackendIpAddress"] }}
             {%endfor%}"
-          SSH_KEY="{{ parameters.pkey|replace("\n","|") }}"
+          SSH_KEY="{{ read_file(parameters.pkey) | replace("\n","|") }}"
           FIREWALL="{{ parameters.firewall | lower }}"
         '
         nic_speed: "{{ parameters.nic_speed }}"

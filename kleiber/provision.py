@@ -284,6 +284,7 @@ def get_templated_string(templatestring, score):
     env = Environment(autoescape=False,
                       loader=DictLoader({'templatestring': templatestring}),
                       trim_blocks=False)
+    env.globals['read_file'] = lib.read_file
     return env.get_template('templatestring').render(score)
 
 
