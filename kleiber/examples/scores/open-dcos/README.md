@@ -1,13 +1,13 @@
 # dc/os cluster orchestration for softlayer
 
 The following is a quick guide on how to install [dc/os](https://dcos.io/) on softlayer. Detailed information about dc/os
-can be found [here](https://dcos.io/docs/1.7/).
+can be found [here](https://dcos.io/docs/1.9/).
 
 ## install & configure kleiber
 
 First clone the [kleiber](https://github.rtp.raleigh.ibm.com/edgepoc/kleiber) repository.
 
-**Note:** If you don't want to install kleiber to your OS'es python then you should setup a python [virualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) 
+**Note:** If you don't want to install kleiber to your OS'es python then you should setup a python [virtualenv](http://docs.python-guide.org/en/latest/dev/virtualenvs/) 
 before you run the following install command.
 
 Change to the kleiber directory and run the install command as follows.
@@ -33,22 +33,34 @@ cd <kleiber_home>/kleiber/examples/scores/open-dcos
 
 Next we use the following kleiber create command to install the dc/os cluster.
 
-**Note:** This process takes a while so be patient, don't close your terminal. In our experience a 
-simple cluster (1 master, 1 agent) takes like 15 mins, a more complex one (3 masters, 3 agents) takes like > 30 mins.
-We run with **-v** option so that you see debug output, and know something is happening.
+**Note:** This process takes a while so be patient, don't close your terminal. We run with **-v** option so that you see debug output, and know something is happening.
 
 ```
-kleiber create open-dcos.yml cluster_name datacenter=sjc01 masters=1 agents=1 keyname=public_key_name pkey=private_key_path -v
+kleiber create open-dcos.yml cluster_name datacenter=sjc01 masters=1 agents=1 public_agents=1 firewall=true keyname=public_key_name pkey=private_key_path -v
 ```
 * cluster_name - the name you want to give the cluster, will be the prefix on all the node names
 * datacenter - the softlayer datacenter you want the dc/os cluster created in
 * masters - the number of mesos master nodes you want in your dc/os cluster, for HA you would want 3
 * agents - the number of mesos agent nodes you want in your dc/os cluster
+* public_agents - the number of mesos public agent nodes you want in your dc/os cluster
+* firewall - the master and (private) agent nodes are only ssh accessible when firewall is set to true. Note that if firewall is set to false all is open.
 * keyname - the name of the public key registered with softlayer with which the nodes get configured
 * pkey - the path of the private key file, required by the bootstrap node to install the dc/os roles on masters and agents
 
 
-The creation ends with the following ouput.
+The creation ends with the following ouput when firewall is set to true. Create an ssh tunnel from your client with the command shown. Pick the dcos url and put it into your browser, it will take you to the dc/os console.
+
+```
+create ssh tunnel to master: "ssh -i <private_key_path> -f core@<master_ip> -L 7000:<master_ip>:443 -N" 
+   
+dcos: "https://localhost:7000"
+mesos: "https://localhost:7000/mesos"
+exhibitor: "https://localhost:7000/exhibitor"
+bootstrap: "<boostrap_ip>"
+```
+
+The creation ends with the following ouput when firewall is set to false. Pick the dcos url and put it into your browser, it will take you to the dc/os console.
+
 ```
 dcos: "http://<master_ip>"
 mesos: "http://<master_ip>/mesos"
@@ -56,12 +68,10 @@ exhibitor: "http://<master_ip>/exhibitor"
 bootstrap: "<boostrap_ip>"
 ```
 
-Pick the dcos url and put it into your browser, it will take you to the dc/os console.
-
 
 ## install the dc/os cli
 
-For installing the dc/os cli yourself and how to use it go [here](https://dcos.io/docs/1.7/usage/cli/).
+For installing the dc/os cli yourself and how to use it go [here](https://dcos.io/docs/1.9/usage/cli/).
 
 If you dont want to install the dc/os cli on your client just yet, then we have a quick way for you to explore it.
 

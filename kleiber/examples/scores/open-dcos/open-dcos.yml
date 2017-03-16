@@ -26,7 +26,7 @@ parameters:
    public_agents: 1
    os_code: COREOS_LATEST_64
    nic_speed: 100
-   firewall: false
+   firewall: true
 
 datacenter: "{{ parameters.datacenter }}"
 
