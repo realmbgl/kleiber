@@ -15,23 +15,36 @@
 # limitations under the License.
 #*******************************************************************************
 
-import sys
-import requests
+import os,sys
+import subprocess
 import time
 
-if not len(sys.argv) == 2:
-    usagestring = "usage: {} <masterip>"
+
+def get_master_rc(pkey, bootstrap_user, bootstrap_publicip, master_privateip):
+
+    currenv = os.environ.copy()
+
+    a = ['ssh', '-i', pkey, '-o', 'StrictHostKeyChecking=no', '-o', 'UserKnownHostsFile=/dev/null' ,bootstrap_user+'@'+bootstrap_publicip, 'curl', '-ksw', '\'%{http_code}\'', 'https://'+master_privateip, '-o', '/dev/null', '--connect-timeout', '5']
+
+    ssh = subprocess.Popen(a, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=currenv)
+    result = ssh.stdout.readlines()
+    if (result == []) or (int(result[0]) == 0):
+       error = ssh.stderr.readlines()
+       raise Exception(error)
+
+    return int(result[0])
+
+
+if not len(sys.argv) == 5:
+    usagestring = "usage: {} <pkey> <bootstrap_user> <bootstrap_publicip> <master_privateip>"
     print usagestring.format(sys.argv[0])
     sys.exit(1)
 
-masterip = sys.argv[1]
-url = "http://{}/mesos".format(masterip)
-
 while True:
     try:
-       r = requests.get(url, timeout=5)
-       print r
-       if (r.status_code == 401) or (r.status_code == 200):
+       rc = get_master_rc(sys.argv[1], 'core' if 'coreos' in sys.argv[2].lower() else 'root', sys.argv[3], sys.argv[4])
+       if (rc == 401) or (rc == 200):
+          print rc
           break
        print "{}, master not up yet".format(r.status_code)
     except:
