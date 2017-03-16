@@ -52,7 +52,6 @@ The creation ends with the following ouput.
 ```
 dcos: "http://<master_ip>"
 mesos: "http://<master_ip>/mesos"
-marathon: "http://<master_ip>/marathon"
 exhibitor: "http://<master_ip>/exhibitor"
 bootstrap: "<boostrap_ip>"
 ```

@@ -109,7 +109,10 @@ resources:
 
 post-scripts:
   "waitForUp.py":
-    - '{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}'
+    - '{{ parameters.pkey }}'
+    - '{{ parameters.os_code }}'
+    - '{{ resources["serverinstances"]["bootstrap"]["vms"][0]["primaryIpAddress"] }}'
+    - '{{ resources["serverinstances"]["masters"]["vms"][0]["primaryBackendIpAddress"] }}'
 
 cleanup-scripts:
   "cleanup.py":
@@ -118,8 +121,19 @@ cleanup-scripts:
 
 output:
   template: |
-    dcos: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}"
-    mesos: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}/mesos"
-    marathon: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}/marathon"
-    exhibitor: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}/exhibitor"
-    bootstrap: "{{ resources["serverinstances"]["bootstrap"]["vms"][0]["primaryIpAddress"] }}"
+    {% if parameters.firewall == "false" %}
+       dcos: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}"
+       mesos: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}/mesos"
+       exhibitor: "http://{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}/exhibitor"
+       bootstrap: "{{ resources["serverinstances"]["bootstrap"]["vms"][0]["primaryIpAddress"] }}"
+    {% else %}
+       {% if parameters.os_code == "COREOS_LATEST_64" %}
+       create ssh tunnel to master: "ssh -i {{ parameters.pkey }} -f core@{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }} -L 7000:{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}:443 -N" 
+       {% else %}
+       create ssh tunnel to master: "ssh -i {{ parameters.pkey }} -f root@{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }} -L 7000:{{ resources["serverinstances"]["masters"]["vms"][0]["primaryIpAddress"] }}:443 -N"
+       {% endif %}
+       dcos: "https://localhost:7000"
+       mesos: "https://localhost:7000/mesos"
+       exhibitor: "https://localhost:7000/exhibitor"
+       bootstrap: "{{ resources["serverinstances"]["bootstrap"]["vms"][0]["primaryIpAddress"] }}"
+    {% endif %}
