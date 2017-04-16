@@ -109,8 +109,8 @@ chmod 0600 genconf/ssh_key
 
 
 echo ">>> download dcos installer"
-curl -O https://downloads.dcos.io/dcos/EarlyAccess/dcos_generate_config.sh
-#curl -O https://downloads.dcos.io/dcos/stable/dcos_generate_config.sh
+#curl -O https://downloads.dcos.io/dcos/EarlyAccess/dcos_generate_config.sh
+curl -O https://downloads.dcos.io/dcos/stable/dcos_generate_config.sh
 chmod +x dcos_generate_config.sh
 
 echo ">>> run --genconf"
