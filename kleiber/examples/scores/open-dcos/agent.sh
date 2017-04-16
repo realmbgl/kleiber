@@ -83,6 +83,7 @@ cat > /var/lib/iptables/rules-save <<EOF
 COMMIT
 *filter
 :INPUT DROP [0:0]
+-A INPUT -i docker0 -j ACCEPT
 -A INPUT -i lo -j ACCEPT
 -A INPUT -i eth0 -j ACCEPT
 -A INPUT -p tcp --dport 22 -j ACCEPT
